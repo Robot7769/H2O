@@ -40,9 +40,15 @@ int main(int argc, char const *argv[]) {
 
     //argument 3 čas čekání na zařazení do fronty
     time_i = atoi(argv[3]);
+    if (time_i > TIME_MAX) {
+        error_exit("TI není v rozsaho 0<=TI<=1000\n");
+    }
 
     //argument 4 čas vytváření molekul
     time_b = atoi(argv[4]);
+    if (time_b > TIME_MAX) {
+        error_exit("TB není v rozsaho 0<=TB<=1000\n");
+    }
 
     printf("\ndone! %ld %ld %ld %ld\n", count_o, count_h, time_i,time_b);
     return 0;
