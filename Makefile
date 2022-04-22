@@ -7,12 +7,15 @@ LDLIBS = -pthread -lrt
 all: proj2 #
 
 # souboty .o (závislosti)
-proj2.o: proj2.c
-	$(CC) $(CFLAGS) -c proj2.c -o proj2.o
+error.o: error.c error.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+proj2.o: proj2.c error.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 #spustitelné binárky
-proj2: proj2.o 
-	$(CC) proj2.o $(LDLIBS) -o proj2
+proj2: proj2.o error.o
+	$(CC) $^ $(LDLIBS) -o $@
 
 # pomocné příkazy
 zip:
