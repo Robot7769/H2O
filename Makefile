@@ -10,7 +10,7 @@ all: proj2 #
 error.o: error.c error.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-proj2.o: proj2.c error.h
+proj2.o: proj2.c error.h proj2.h funkce.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #spustitelné binárky

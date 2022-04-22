@@ -10,8 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -19,30 +18,8 @@
 
 #include "error.h"
 
-#define ARG_COUNT 5
-#define TIME_MAX 1000
-
-
-size_t count_o = 0;
-size_t count_h = 0;
-size_t time_i = 0;
-size_t time_b = 0;
-
-/**
- * @brief Funkce na validaci že řetězec obsahuje pouze číslice
- * 
- * @param ptr 
- * @return true 
- * @return false 
- */
-bool is_number( char const *ptr) {
-    for (size_t i = 0; i < strlen(ptr); i++) {
-        if (!(ptr[i] >= '0' && ptr[i] <= '9')){
-            return true;
-        }
-    }
-    return false;
-}
+#include "proj2.h"
+#include "funkce.c"
 
   
 int main(int argc, char const *argv[]) {
@@ -67,6 +44,6 @@ int main(int argc, char const *argv[]) {
     //argument 4 čas vytváření molekul
     time_b = atoi(argv[4]);
 
-    printf("\ndone!\n");
+    printf("\ndone! %ld %ld %ld %ld\n", count_o, count_h, time_i,time_b);
     return 0;
 }
