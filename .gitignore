@@ -2,3 +2,4 @@
 *.o
 proj2
 exe*
+*.out
