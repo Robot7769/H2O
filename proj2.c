@@ -16,6 +16,10 @@
 #include <semaphore.h>
 #include <unistd.h>
 
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+
 #include "error.h"
 
 #include "proj2.h"
@@ -31,25 +35,56 @@ int main(int argc, char const *argv[]) {
             error_exit("Argument %d není celé kladné číslo\n", i);
         }
     }
+    shmem_t *mem = mmap(NULL, sizeof(shmem_t),PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS ,-1,0);
+    if (mem == MAP_FAILED) {
+        error_exit("Nepodařilo se vytnořit sdílenou paměť\n");
+    }
         
     //argument 1 počet kyslíků
-    count_o = atoi(argv[1]);
+    mem->count_o = atoi(argv[1]);
     
     //argument 2 počet vodíků
-    count_h = atoi(argv[2]);
+    mem->count_h = atoi(argv[2]);
 
     //argument 3 čas čekání na zařazení do fronty
-    time_i = atoi(argv[3]);
-    if (time_i > TIME_MAX) {
+    mem->time_i = atoi(argv[3]);
+    if (mem->time_i > TIME_MAX) {
         error_exit("TI není v rozsaho 0<=TI<=1000\n");
     }
 
     //argument 4 čas vytváření molekul
-    time_b = atoi(argv[4]);
-    if (time_b > TIME_MAX) {
+    mem->time_b = atoi(argv[4]);
+    if (mem->time_b > TIME_MAX) {
         error_exit("TB není v rozsaho 0<=TB<=1000\n");
     }
 
-    printf("\ndone! %ld %ld %ld %ld\n", count_o, count_h, time_i,time_b);
+    pid_t kyslik = fork();
+    if (kyslik == 0) {
+        //main
+            printf("START\n");
+  
+        pid_t vodik = fork();
+        if (vodik) {
+            //funkce vodik
+            printf("začátek vodíku %d\n", vodik);
+            mem->count_h--;
+            usleep(rand() % 500);
+            printf("konec vodíku %d\n", vodik);
+            exit(0);
+        }
+        usleep(1005);
+        printf("stop\n");
+    } else {
+        //funkce kyslik
+        printf("začátek kyslíku %d\n", kyslik);
+        mem->count_o--;
+        usleep(rand() % 500);
+        
+        printf("konec kyslíku %d\n", kyslik);
+        exit(0);
+    }
+    
+
+    printf("\ndone! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
     return 0;
 }

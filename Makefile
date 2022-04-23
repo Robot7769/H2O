@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -std=gnu99 -pedantic -Wall -Wextra #-Werror #-O2 #-m32
-LDLIBS = -pthread -lrt
+LDLIBS = -pthread -lrt -lpthread 
 
 .PHONY: all zip clean
 

@@ -17,10 +17,12 @@
 #define TIME_MAX 1000
 
 //! struktura
-size_t count_o = 0;
-size_t count_h = 0;
-size_t time_i = 0;
-size_t time_b = 0;
+typedef struct shmem {
+    size_t count_o;
+    size_t count_h;
+    size_t time_i;
+    size_t time_b;
+}shmem_t;
 
 
 #endif // PROJ2_LIB
