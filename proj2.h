@@ -31,11 +31,13 @@ typedef struct shmem {
     size_t molecule;
 }shmem_t;
 
-sem_t mutex;
-sem_t queue_o;
-sem_t queue_h;
-sem_t barier;
-sem_t print;
+typedef struct semaphores {
+    sem_t *mutex;
+    sem_t *queue_o;
+    sem_t *queue_h;
+    sem_t *barrier;
+    sem_t *print;
+}sems_t;
 
 
 #endif // PROJ2_LIB
