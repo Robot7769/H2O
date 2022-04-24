@@ -49,12 +49,14 @@ int main(int argc, char const *argv[]) {
     //argument 3 čas čekání na zařazení do fronty
     mem->time_i = atoi(argv[3]);
     if (mem->time_i > TIME_MAX) {
+        munmap(mem, sizeof(shmem_t));
         error_exit("TI není v rozsaho 0<=TI<=1000\n");
     }
 
     //argument 4 čas vytváření molekul
     mem->time_b = atoi(argv[4]);
     if (mem->time_b > TIME_MAX) {
+        munmap(mem, sizeof(shmem_t));
         error_exit("TB není v rozsaho 0<=TB<=1000\n");
     }
 
@@ -86,5 +88,6 @@ int main(int argc, char const *argv[]) {
     
 
     printf("\ndone! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
+    munmap(mem, sizeof(shmem_t));
     return 0;
 }
