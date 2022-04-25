@@ -31,6 +31,59 @@ bool is_number( char const *ptr) {
     return false;
 }
 
+void memory_setup(shmem_t *memory) {
+    memory->index_o = 0;
+    memory->index_h = 0;
+    memory->out_o = 0;
+    memory->out_h = 0;
+    memory->molecule = 0;   
+}
+
+int sem_start(sems_t *sems) {
+    sems->mutex = sem_open("/ios_proj2_H2O_mutex", O_CREAT | O_EXCL, 0666, 1);
+    if (sems->mutex == SEM_FAILED) {
+        return 1;
+    }
+    sems->queue_o = sem_open("/ios_proj2_H2O_queue_o", O_CREAT | O_EXCL, 0666, 0);
+    if (sems->queue_o == SEM_FAILED) {
+        sem_unlink("/ios_proj2_H2O_mutex");
+        sem_close(sems->mutex);
+        return 1;
+    }
+    sems->queue_h = sem_open("/ios_proj2_H2O_queue_h", O_CREAT | O_EXCL, 0666, 0);
+    if (sems->queue_h == SEM_FAILED) {
+        sem_unlink("/ios_proj2_H2O_mutex");
+        sem_close(sems->mutex);
+        sem_unlink("/ios_proj2_H2O_queue_o");
+        sem_close(sems->queue_o);
+        return 1;
+    }
+    sems->barrier = sem_open("/ios_proj2_H2O_barrier", O_CREAT | O_EXCL, 0666, 3);
+    if (sems->barrier == SEM_FAILED) {
+        sem_unlink("/ios_proj2_H2O_mutex");
+        sem_close(sems->mutex);
+        sem_unlink("/ios_proj2_H2O_queue_o");
+        sem_close(sems->queue_o);
+        sem_unlink("/ios_proj2_H2O_queue_h");
+        sem_close(sems->queue_h);
+        return 1;
+    }
+    sems->print = sem_open("/ios_proj2_H2O_print", O_CREAT | O_EXCL, 0666, 1);
+    if (sems->print == SEM_FAILED) {
+        sem_unlink("/ios_proj2_H2O_mutex");
+        sem_close(sems->mutex);
+        sem_unlink("/ios_proj2_H2O_queue_o");
+        sem_close(sems->queue_o);
+        sem_unlink("/ios_proj2_H2O_queue_h");
+        sem_close(sems->queue_h);
+        sem_unlink("/ios_proj2_H2O_barrier");
+        sem_close(sems->barrier);
+        return 1;
+    }
+    return 0;
+}
+
+
 void print_out(sems_t sems,shmem_t *mem, FILE *output,const char *fmt, ...) {
     sem_wait(sems.print);
     mem->id +=1;
@@ -98,7 +151,7 @@ void hydrogen(sems_t sems, shmem_t *mem, FILE *output) {
         mem->out_h -= 2;
         sem_post(sems.queue_o);
         mem->out_o -= 1;
-        print_out(sems,mem, output,"H %d:molecule %d created\n", mem->index_h, mem->molecule);
+        print_out(sems,mem, output,"H %d: molecule %d created\n", mem->index_h, mem->molecule);
     } else {
         sem_post(sems.mutex);
     }

@@ -39,18 +39,12 @@ int main(int argc, char const *argv[]) {
     if (mem == MAP_FAILED) {
         error_exit("Nepodařilo se vytnořit sdílenou paměť\n");
     }
-    mem->index_o = 0;
-    mem->index_h = 0;
-    mem->out_o = 0;
-    mem->out_h = 0;
-    mem->molecule = 0;
+
+    memory_setup(mem);
+
     sems_t sems;
-    sems.mutex = sem_open("/ios_proj2_H2O_mutex", O_CREAT | O_EXCL, 0666, 1);
-    sems.queue_o = sem_open("/ios_proj2_H2O_queue_o", O_CREAT | O_EXCL, 0666, 0);
-    sems.queue_h = sem_open("/ios_proj2_H2O_queue_h", O_CREAT | O_EXCL, 0666, 0);
-    sems.barrier = sem_open("/ios_proj2_H2O_barrier", O_CREAT | O_EXCL, 0666, 0);
-    sems.print = sem_open("/ios_proj2_H2O_print", O_CREAT | O_EXCL, 0666, 1);
-    if ((sems.mutex == SEM_FAILED) || (sems.queue_o == SEM_FAILED) || (sems.queue_h == SEM_FAILED) || (sems.barrier == SEM_FAILED) || (sems.print == SEM_FAILED)) {
+    
+    if (sem_start(&sems)) {
         munmap(mem, sizeof(shmem_t));
         error_exit("Semafor se neotevřel\n");
     }
@@ -84,7 +78,7 @@ int main(int argc, char const *argv[]) {
     }
 
     
-    //pid_t process[mem->count_o + mem->count_h];
+    pid_t process[mem->count_o + mem->count_h];
     for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
         pid_t pid = fork();
         if (pid == 0) {
@@ -105,12 +99,21 @@ int main(int argc, char const *argv[]) {
                 exit(0);       
             }
             
+        } else if (pid < 0) {
+            munmap(mem, sizeof(shmem_t));
+            error_exit("Nepodařilo se otevřít proces\n");
+        } else {
+            process[i] = pid;
         }
+
     }
-    usleep(1005);
+    printf("start wait\n");
+    for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
+        waitpid(process[i],NULL,0);
+    }
+    
     printf("stop\n");
     
-
 
     //printf("done! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
     sem_unlink("/ios_proj2_H2O_mutex");
