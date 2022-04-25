@@ -15,6 +15,7 @@
 
 #define ARG_COUNT 5
 #define TIME_MAX 1000
+#define OUTPUT_FILE "proj2.out"
 
 //! struktura
 typedef struct shmem {

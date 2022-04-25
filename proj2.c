@@ -71,7 +71,7 @@ int main(int argc, char const *argv[]) {
         error_exit("TB není v rozsaho 0<=TB<=1000\n");
     }
 
-    FILE *output = fopen("proj.out","w");
+    FILE *output = fopen(OUTPUT_FILE,"w");
     if (output == NULL) {
         munmap(mem, sizeof(shmem_t));
         error_exit("Nepodařilo se otevřít soubor pro zápis\n");
@@ -116,17 +116,7 @@ int main(int argc, char const *argv[]) {
     
 
     //printf("done! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
-    sem_unlink("/ios_proj2_H2O_mutex");
-    sem_close(sems.mutex);
-    sem_unlink("/ios_proj2_H2O_queue_o");
-    sem_close(sems.queue_o);
-    sem_unlink("/ios_proj2_H2O_queue_h");
-    sem_close(sems.queue_h);
-    sem_unlink("/ios_proj2_H2O_barrier");
-    sem_close(sems.barrier);
-    sem_unlink("/ios_proj2_H2O_print");
-    sem_close(sems.print);
-    munmap(mem, sizeof(shmem_t));
+    clean_seme_mem(&sems, mem);
     return 0;
 }
 

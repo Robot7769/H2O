@@ -162,5 +162,24 @@ void hydrogen(sems_t sems, shmem_t *mem, FILE *output) {
     fclose(output);
 }
 
+void clean_seme_mem(sems_t *sems, shmem_t *mem) {
+    sem_unlink("/ios_proj2_H2O_mutex");
+    sem_close(sems->mutex);
+
+    sem_unlink("/ios_proj2_H2O_queue_o");
+    sem_close(sems->queue_o);
+
+    sem_unlink("/ios_proj2_H2O_queue_h");
+    sem_close(sems->queue_h);
+
+    sem_unlink("/ios_proj2_H2O_barrier");
+    sem_close(sems->barrier);
+
+    sem_unlink("/ios_proj2_H2O_print");
+    sem_close(sems->print);
+    
+    munmap(mem, sizeof(shmem_t));
+}
+
 
 #endif // PROJ2_FCE
