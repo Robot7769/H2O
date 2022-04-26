@@ -32,8 +32,6 @@ bool is_number( char const *ptr) {
 }
 
 void memory_setup(shmem_t *memory) {
-    memory->index_o = 0;
-    memory->index_h = 0;
     memory->out_o = 0;
     memory->out_h = 0;
     memory->molecule = 0;   
@@ -99,65 +97,79 @@ void print_out(sems_t sems,shmem_t *mem, FILE *output,const char *fmt, ...) {
     sem_post(sems.print);
 }
 
-void oxygen(sems_t sems, shmem_t *mem, FILE *output) {
-    sem_wait(sems.mutex);
-    mem->index_o +=1;       // ID kyslíku
-    print_out(sems,mem, output,"O %d: started\n", mem->index_o);
+void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
+    print_out(sems,mem, output,"O %d: started\n",ido);
     if (mem->time_i != 0) {
-        usleep(rand() % mem->time_i + 1);
+        usleep(rand() % ((mem->time_i + 1)*1000));
     }
+    sem_wait(sems.mutex);
     mem->out_o +=1;
-    print_out(sems,mem, output,"O %d: going to queue\n", mem->index_o);
+    print_out(sems,mem, output,"O %d: going to queue\n", ido);
     if (mem->out_h >= 2) {
         mem->molecule +=1;
-        print_out(sems,mem, output,"O %d: creating molecule %d\n", mem->index_o, mem->molecule);
+        print_out(sems,mem, output,"O %d: creating molecule %d\n", ido, mem->molecule);
         if (mem->time_b != 0) {
-            usleep(rand() % mem->time_b + 1);
+            usleep(rand() % ((mem->time_b + 1)*1000));
         }
         sem_post(sems.queue_h);
         sem_post(sems.queue_h);
         mem->out_h -= 2;
         sem_post(sems.queue_o);
         mem->out_o -= 1;
-        print_out(sems,mem, output,"O %d: molecule %d created\n", mem->index_o, mem->molecule);
+        print_out(sems,mem, output,"O %d: molecule %d created\n", ido, mem->molecule);
     } else {
         sem_post(sems.mutex);
+        print_out(sems,mem,output, "O %d: not enough H\n", ido);
     }
     sem_wait(sems.queue_o);
     //! bont
-    
+    int val;
+    sem_getvalue(sems.barrier,&val);
+    printf("bar: %d\n", val);
+    if (val == 3 ) {
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+    }
     sem_wait(sems.barrier);
     sem_post(sems.mutex);
     fclose(output);
 }
 
-void hydrogen(sems_t sems, shmem_t *mem, FILE *output) {
-    sem_wait(sems.mutex);
-    mem->index_h +=1;       // ID vodíku
-    print_out(sems,mem, output,"H %d: started\n", mem->index_h);
+void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
+    print_out(sems,mem, output,"H %d: started\n", idh);
     if (mem->time_i != 0) {
-        usleep(rand() % mem->time_i + 1);
+        usleep(rand() % ((mem->time_i + 1)*1000));
     }
+    sem_wait(sems.mutex);
     mem->out_h +=1;
-    print_out(sems,mem, output,"H %d: going to queue\n", mem->index_h);
-    if (mem->out_h >= 2 && mem->count_o >= 1) {
+    print_out(sems,mem, output,"H %d: going to queue\n", idh);
+    if (mem->out_h >= 2 && mem->out_o >= 1) {
         mem->molecule +=1;
-        print_out(sems,mem, output,"H %d: creating molecule %d\n", mem->index_h, mem->molecule);
+        print_out(sems,mem, output,"H %d: creating molecule %d\n", idh, mem->molecule);
         if (mem->time_b != 0) {
-            usleep(rand() % mem->time_b + 1);
+            usleep(rand() % ((mem->time_b + 1)*1000));
         }
         sem_post(sems.queue_h);
         sem_post(sems.queue_h);
         mem->out_h -= 2;
         sem_post(sems.queue_o);
         mem->out_o -= 1;
-        print_out(sems,mem, output,"H %d: molecule %d created\n", mem->index_h, mem->molecule);
+        print_out(sems,mem, output,"H %d: molecule %d created\n", idh, mem->molecule);
     } else {
         sem_post(sems.mutex);
+        print_out(sems,mem,output, "H %d: not enough O or H\n", idh);
     }
     sem_wait(sems.queue_h);
     //! bont
-    
+    int val;
+    sem_getvalue(sems.barrier,&val);
+    printf("bar: %d\n", val);
+    if (val == 3 ) {
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+    }
     sem_wait(sems.barrier);
     fclose(output);
 }
