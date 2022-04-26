@@ -85,7 +85,7 @@ int main(int argc, char const *argv[]) {
             if (i < mem->count_o) {
                 //funkce kyslik
                 printf("začátek kyslíku %d  ", pid);
-                oxygen(sems, mem, output);
+                oxygen(i+1,sems, mem, output);
 
                 printf("konec kyslíku %d\n", pid);
                 exit(0);
@@ -93,7 +93,7 @@ int main(int argc, char const *argv[]) {
                 //funkce vodik
                 printf("začátek vodíku %d  ", pid);
 
-                hydrogen(sems, mem, output);
+                hydrogen(i-mem->count_o+1,sems, mem, output);
 
                 printf("konec vodíku %d\n", pid);
                 exit(0);       
