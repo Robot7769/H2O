@@ -99,6 +99,7 @@ void print_out(sems_t sems,shmem_t *mem, FILE *output,const char *fmt, ...) {
 }
 
 void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
+    srand(time(NULL) ^ (getpid()<<16));
     print_out(sems,mem, output,"O %d: started\n",ido);
     if (mem->time_i != 0) {
         usleep(rand() % ((mem->time_i + 1)*1000));
@@ -142,6 +143,7 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
 }
 
 void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
+    srand(time(NULL) ^ (getpid()<<16));
     print_out(sems,mem, output,"H %d: started\n", idh);
     if (mem->time_i != 0) {
         usleep(rand() % ((mem->time_i + 1)*1000));
