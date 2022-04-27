@@ -98,6 +98,22 @@ void print_out(sems_t sems,shmem_t *mem, FILE *output,const char *fmt, ...) {
     sem_post(sems.print);
 }
 
+void molecul_creator(char type, size_t id, sems_t sems,shmem_t *mem, FILE *output) {
+    print_out(sems,mem, output,"%c %d: creating molecule %d\n", type, id, mem->molecule);
+    if (mem->time_b != 0) {
+        usleep(rand() % ((mem->time_b + 1)*1000));
+    }
+    (mem->bar)++;
+    printf("bar: %d\n", mem->bar);
+    if (mem->bar == 0 ) {
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+        sem_post(sems.barrier);
+        mem->bar = -3;
+    }
+    print_out(sems,mem, output,"%c %d: molecule %d created\n", type, id, mem->molecule);
+}
+
 void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     srand(time(NULL) ^ (getpid()<<16));
     print_out(sems,mem, output,"O %d: started\n",ido);
@@ -122,19 +138,7 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     sem_wait(sems.queue_o);
     printf("NOT_wait_O\n");
     //! bont
-    print_out(sems,mem, output,"O %d: creating molecule %d\n", ido, mem->molecule);
-    if (mem->time_b != 0) {
-        usleep(rand() % ((mem->time_b + 1)*1000));
-    }
-    (mem->bar)++;
-    printf("bar: %d\n", mem->bar);
-    if (mem->bar == 0 ) {
-        sem_post(sems.barrier);
-        sem_post(sems.barrier);
-        sem_post(sems.barrier);
-        mem->bar = -3;
-    }
-    print_out(sems,mem, output,"O %d: molecule %d created\n", ido, mem->molecule);
+    molecul_creator('O', ido, sems, mem, output);
     printf("wait_BAR %ld\n", ido);
     sem_wait(sems.barrier);
     printf("NOT_wait_BAR %ld\n", ido);
@@ -166,19 +170,7 @@ void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
     sem_wait(sems.queue_h);
     printf("NOT_wait_H %ld\n", idh);
     //! bont
-    print_out(sems,mem, output,"H %d: creating molecule %d\n", idh, mem->molecule);
-    if (mem->time_b != 0) {
-        usleep(rand() % ((mem->time_b + 1)*1000));
-    }
-    (mem->bar)++;
-    printf("bar: %d\n", mem->bar);
-    if (mem->bar == 0 ) {
-        sem_post(sems.barrier);
-        sem_post(sems.barrier);
-        sem_post(sems.barrier);
-        mem->bar = -3;
-    }
-    print_out(sems,mem, output,"H %d: molecule %d created\n", idh, mem->molecule);
+    molecul_creator('H', idh, sems, mem, output);
     printf("wait_BAR %ld\n",idh);
     sem_wait(sems.barrier);
     printf("NOT_wait_BAR %ld\n", idh);

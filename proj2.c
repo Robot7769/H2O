@@ -89,7 +89,7 @@ int main(int argc, char const *argv[]) {
                 oxygen(i+1,sems, mem, output);
 
                 printf("konec kyslíku %d\n", pid);
-                exit(0);
+                return 0;
             } else {
                 //! funkce vodik
                 printf("začátek vodíku %d  ", pid);
@@ -97,7 +97,7 @@ int main(int argc, char const *argv[]) {
                 hydrogen(i-mem->count_o+1,sems, mem, output);
 
                 printf("konec vodíku %d\n", pid);
-                exit(0);       
+                return 0;     
             }
             
         } else if (pid < 0) {
@@ -109,6 +109,7 @@ int main(int argc, char const *argv[]) {
 
     }
     printf("start wait\n");
+    
     for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
         waitpid(process[i],NULL,0);
     }
