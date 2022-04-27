@@ -30,6 +30,8 @@ typedef struct shmem {
     size_t index_o;
     size_t index_h;
     size_t molecule;
+
+    int bar;
 }shmem_t;
 
 typedef struct semaphores {

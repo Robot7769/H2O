@@ -60,20 +60,20 @@ int main(int argc, char const *argv[]) {
     //argument 3 čas čekání na zařazení do fronty
     mem->time_i = atoi(argv[3]);
     if (mem->time_i > TIME_MAX) {
-        munmap(mem, sizeof(shmem_t));
+        clean_seme_mem(&sems, mem);
         error_exit("TI není v rozsaho 0<=TI<=1000\n");
     }
 
     //argument 4 čas vytváření molekul
     mem->time_b = atoi(argv[4]);
     if (mem->time_b > TIME_MAX) {
-        munmap(mem, sizeof(shmem_t));
+        clean_seme_mem(&sems, mem);
         error_exit("TB není v rozsaho 0<=TB<=1000\n");
     }
 
     FILE *output = fopen(OUTPUT_FILE,"w");
     if (output == NULL) {
-        munmap(mem, sizeof(shmem_t));
+        clean_seme_mem(&sems, mem);
         error_exit("Nepodařilo se otevřít soubor pro zápis\n");
     }
 
@@ -82,15 +82,16 @@ int main(int argc, char const *argv[]) {
     for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
         pid_t pid = fork();
         if (pid == 0) {
+            printf("vel: %ld  ",mem->count_o + mem->count_h);
             if (i < mem->count_o) {
-                //funkce kyslik
+                //! funkce kyslik
                 printf("začátek kyslíku %d  ", pid);
                 oxygen(i+1,sems, mem, output);
 
                 printf("konec kyslíku %d\n", pid);
                 exit(0);
             } else {
-                //funkce vodik
+                //! funkce vodik
                 printf("začátek vodíku %d  ", pid);
 
                 hydrogen(i-mem->count_o+1,sems, mem, output);
@@ -100,7 +101,7 @@ int main(int argc, char const *argv[]) {
             }
             
         } else if (pid < 0) {
-            munmap(mem, sizeof(shmem_t));
+            clean_seme_mem(&sems, mem);
             error_exit("Nepodařilo se otevřít proces\n");
         } else {
             process[i] = pid;
