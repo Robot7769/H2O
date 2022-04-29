@@ -20,16 +20,18 @@
 //! struktura
 typedef struct shmem {
     size_t id;
+
     size_t count_o;
     size_t count_h;
+
     size_t time_i;
     size_t time_b;
 
     size_t out_o;
     size_t out_h;
-    size_t index_o;
-    size_t index_h;
+
     size_t molecule;
+    size_t max_craete_molekules;
 
     int bar;
 }shmem_t;
@@ -41,6 +43,8 @@ typedef struct semaphores {
     sem_t *barrier;
     sem_t *print;
     sem_t *molecule;
+    sem_t *end;
+    sem_t *to_end;
 }sems_t;
 
 

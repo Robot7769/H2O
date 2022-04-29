@@ -44,7 +44,7 @@ int main(int argc, char const *argv[]) {
 
     sems_t sems;
     
-    if (sem_start(&sems, mem)) {
+    if (sem_start(&sems)) {
         clean_seme_mem(&sems, mem);
         error_exit("Semafor se neotevřel\n");
     }
@@ -77,26 +77,50 @@ int main(int argc, char const *argv[]) {
         error_exit("Nepodařilo se otevřít soubor pro zápis\n");
     }
 
+    int molekuls_max_conut;
+    sem_wait(sems.mutex);
+    mem->max_craete_molekules = mem->count_h/2;
+    if (mem->max_craete_molekules > mem->count_o) {
+        mem->max_craete_molekules = mem->count_o;
+        molekuls_max_conut = mem->max_craete_molekules;
+    }
+    printf("vyrobím jenom %ld molekul vody\n", mem->max_craete_molekules);
+    mem->max_craete_molekules = 3*(mem->max_craete_molekules);
+    sem_post(sems.mutex);
     
     pid_t process[mem->count_o + mem->count_h];
     for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
         pid_t pid = fork();
         if (pid == 0) {
-            printf("vel: %ld  ",mem->count_o + mem->count_h);
+            //printf("vel: %ld  ",mem->count_o + mem->count_h);
             if (i < mem->count_o) {
                 //! funkce kyslik
-                printf("začátek kyslíku %d  ", pid);
+                //printf("začátek kyslíku %d  ", pid);
                 oxygen(i+1,sems, mem, output);
 
                 printf("konec kyslíku %d\n", pid);
+                sem_wait(sems.to_end);
+                mem->max_craete_molekules--;
+                printf("to end nead %ld\n", mem->max_craete_molekules);
+                if (mem->max_craete_molekules == 0) {
+                    sem_post(sems.end);
+                }
+                sem_post(sems.to_end);
                 exit(0);
             } else {
                 //! funkce vodik
-                printf("začátek vodíku %d  ", pid);
+                //printf("začátek vodíku %d  ", pid);
 
                 hydrogen(i-mem->count_o+1,sems, mem, output);
 
                 printf("konec vodíku %d\n", pid);
+                sem_wait(sems.to_end);
+                mem->max_craete_molekules--;
+                printf("to end nead %ld\n", mem->max_craete_molekules);
+                if (mem->max_craete_molekules == 0) {
+                    sem_post(sems.end);
+                }
+                sem_post(sems.to_end);
                 exit(0);
             }
             
@@ -113,13 +137,35 @@ int main(int argc, char const *argv[]) {
         }
 
     }
+
     printf("start wait\n");
+    sem_wait(sems.end);
+    
+    
+    
+    //sem_wait(sems.mutex);
+    printf("stop\n");
+
+    printf("out_h %ld",mem->out_h);
+    for (size_t i = (mem->count_h -2*mem->max_craete_molekules); i > 0; i--) {
+        printf("pouštím H %ld\n", i);
+        sem_post(sems.queue_h);
+        //sleep(1);
+    }
+    printf("stop2\n");
+    for (size_t i = mem->count_o - mem->max_craete_molekules; i > 0; i--) {
+        printf("pouštím O %ld\n", i);
+        sem_post(sems.queue_o);
+        //sleep(1);
+    }
+    printf("stop3\n");
+    //sem_post(sems.mutex);
+    
     
     for (size_t i = 0; i < (mem->count_o + mem->count_h); i++) {
         waitpid(process[i],NULL,0);
     }
-    
-    printf("stop\n");
+    printf("stop4\n");
     
 
     //printf("done! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
