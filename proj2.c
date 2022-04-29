@@ -101,7 +101,12 @@ int main(int argc, char const *argv[]) {
             }
             
         } else if (pid < 0) {
+            for (size_t j = 0; j < i; j++) {
+                kill(process[j],SIGKILL);       //ukončuje předchozí procesy při chybě
+            }
+            
             clean_seme_mem(&sems, mem);
+            fclose(output);
             error_exit("Nepodařilo se otevřít proces\n");
         } else {
             process[i] = pid;
@@ -119,6 +124,7 @@ int main(int argc, char const *argv[]) {
 
     //printf("done! %ld %ld %ld %ld\n", mem->count_o, mem->count_h, mem->time_i,mem->time_b);
     clean_seme_mem(&sems, mem);
+    fclose(output);
     return 0;
 }
 
