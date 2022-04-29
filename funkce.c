@@ -38,59 +38,37 @@ void memory_setup(shmem_t *memory) {
     memory->bar = -3;
 }
 
-int sem_start(sems_t *sems) {
+int sem_start(sems_t *sems, shmem_t *mem) {
     sems->mutex = sem_open("/ios_proj2_H2O_mutex", O_CREAT | O_EXCL, 0666, 1);
     if (sems->mutex == SEM_FAILED) {
         return 1;
     }
     sems->queue_o = sem_open("/ios_proj2_H2O_queue_o", O_CREAT | O_EXCL, 0666, 0);
     if (sems->queue_o == SEM_FAILED) {
-        sem_unlink("/ios_proj2_H2O_mutex");
-        sem_close(sems->mutex);
         return 1;
     }
     sems->queue_h = sem_open("/ios_proj2_H2O_queue_h", O_CREAT | O_EXCL, 0666, 0);
     if (sems->queue_h == SEM_FAILED) {
-        sem_unlink("/ios_proj2_H2O_mutex");
-        sem_close(sems->mutex);
-        sem_unlink("/ios_proj2_H2O_queue_o");
-        sem_close(sems->queue_o);
         return 1;
     }
     sems->barrier = sem_open("/ios_proj2_H2O_barrier", O_CREAT | O_EXCL, 0666, 0);
     if (sems->barrier == SEM_FAILED) {
-        sem_unlink("/ios_proj2_H2O_mutex");
-        sem_close(sems->mutex);
-        sem_unlink("/ios_proj2_H2O_queue_o");
-        sem_close(sems->queue_o);
-        sem_unlink("/ios_proj2_H2O_queue_h");
-        sem_close(sems->queue_h);
         return 1;
     }
     sems->print = sem_open("/ios_proj2_H2O_print", O_CREAT | O_EXCL, 0666, 1);
     if (sems->print == SEM_FAILED) {
-        sem_unlink("/ios_proj2_H2O_mutex");
-        sem_close(sems->mutex);
-        sem_unlink("/ios_proj2_H2O_queue_o");
-        sem_close(sems->queue_o);
-        sem_unlink("/ios_proj2_H2O_queue_h");
-        sem_close(sems->queue_h);
-        sem_unlink("/ios_proj2_H2O_barrier");
-        sem_close(sems->barrier);
         return 1;
     }
     sems->print = sem_open("/ios_proj2_H2O_molecule", O_CREAT | O_EXCL, 0666, 1);
     if (sems->print == SEM_FAILED) {
-        sem_unlink("/ios_proj2_H2O_mutex");
-        sem_close(sems->mutex);
-        sem_unlink("/ios_proj2_H2O_queue_o");
-        sem_close(sems->queue_o);
-        sem_unlink("/ios_proj2_H2O_queue_h");
-        sem_close(sems->queue_h);
-        sem_unlink("/ios_proj2_H2O_barrier");
-        sem_close(sems->barrier);
-        sem_unlink("/ios_proj2_H2O_print");
-        sem_close(sems->print);
+        return 1;
+    }
+    sems->end = sem_open("/ios_proj2_H2O_end", O_CREAT | O_EXCL, 0666, 0);
+    if (sems->print == SEM_FAILED) {
+        return 1;
+    }
+    sems->to_end = sem_open("/ios_proj2_H2O_to_end", O_CREAT | O_EXCL, 0666, 0);
+    if (sems->print == SEM_FAILED) {
         return 1;
     }
     return 0;

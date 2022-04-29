@@ -44,8 +44,8 @@ int main(int argc, char const *argv[]) {
 
     sems_t sems;
     
-    if (sem_start(&sems)) {
-        munmap(mem, sizeof(shmem_t));
+    if (sem_start(&sems, mem)) {
+        clean_seme_mem(&sems, mem);
         error_exit("Semafor se neotevřel\n");
     }
     
