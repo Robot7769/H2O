@@ -79,6 +79,20 @@ int sem_start(sems_t *sems) {
         sem_close(sems->barrier);
         return 1;
     }
+    sems->print = sem_open("/ios_proj2_H2O_molecule", O_CREAT | O_EXCL, 0666, 1);
+    if (sems->print == SEM_FAILED) {
+        sem_unlink("/ios_proj2_H2O_mutex");
+        sem_close(sems->mutex);
+        sem_unlink("/ios_proj2_H2O_queue_o");
+        sem_close(sems->queue_o);
+        sem_unlink("/ios_proj2_H2O_queue_h");
+        sem_close(sems->queue_h);
+        sem_unlink("/ios_proj2_H2O_barrier");
+        sem_close(sems->barrier);
+        sem_unlink("/ios_proj2_H2O_print");
+        sem_close(sems->print);
+        return 1;
+    }
     return 0;
 }
 
@@ -98,11 +112,13 @@ void print_out(sems_t sems,shmem_t *mem, FILE *output,const char *fmt, ...) {
     sem_post(sems.print);
 }
 
-void molecul_creator(char type, size_t id, sems_t sems,shmem_t *mem, FILE *output) {
-    print_out(sems,mem, output,"%c %d: creating molecule %d\n", type, id, mem->molecule);
+void molecul_creator(sems_t sems,shmem_t *mem, FILE *output, const char c, size_t id, size_t mol_count) {
+    sem_wait(sems.molecule);
+    print_out(sems,mem, output,"%c %d: creating molecule %d\n", c, id, mol_count);
     if (mem->time_b != 0) {
         usleep(rand() % ((mem->time_b + 1)*1000));
     }
+    print_out(sems,mem, output,"%c %d: molecule %d created\n", c, id, mol_count);
     (mem->bar)++;
     printf("bar: %d\n", mem->bar);
     if (mem->bar == 0 ) {
@@ -111,7 +127,7 @@ void molecul_creator(char type, size_t id, sems_t sems,shmem_t *mem, FILE *outpu
         sem_post(sems.barrier);
         mem->bar = -3;
     }
-    print_out(sems,mem, output,"%c %d: molecule %d created\n", type, id, mem->molecule);
+    sem_post(sems.molecule);
 }
 
 void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
@@ -138,7 +154,9 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     sem_wait(sems.queue_o);
     printf("NOT_wait_O\n");
     //! bont
-    molecul_creator('O', ido, sems, mem, output);
+    int mol = mem->molecule;
+    molecul_creator(sems, mem, output, 'O', ido, mol);
+    
     printf("wait_BAR %ld\n", ido);
     sem_wait(sems.barrier);
     printf("NOT_wait_BAR %ld\n", ido);
@@ -170,7 +188,9 @@ void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
     sem_wait(sems.queue_h);
     printf("NOT_wait_H %ld\n", idh);
     //! bont
-    molecul_creator('H', idh, sems, mem, output);
+    int mol = mem->molecule;
+    molecul_creator(sems, mem, output, 'H', idh, mol);
+
     printf("wait_BAR %ld\n",idh);
     sem_wait(sems.barrier);
     printf("NOT_wait_BAR %ld\n", idh);
@@ -192,6 +212,9 @@ void clean_seme_mem(sems_t *sems, shmem_t *mem) {
 
     sem_unlink("/ios_proj2_H2O_print");
     sem_close(sems->print);
+
+    sem_unlink("/ios_proj2_H2O_molecule");
+    sem_close(sems->molecule);
     
     munmap(mem, sizeof(shmem_t));
 }

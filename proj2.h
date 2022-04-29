@@ -40,6 +40,7 @@ typedef struct semaphores {
     sem_t *queue_h;
     sem_t *barrier;
     sem_t *print;
+    sem_t *molecule;
 }sems_t;
 
 
