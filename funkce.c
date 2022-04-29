@@ -153,9 +153,8 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     printf("wait_O\n");
     sem_wait(sems.queue_o);
     printf("NOT_wait_O\n");
-    //! bont
-    int mol = mem->molecule;
-    molecul_creator(sems, mem, output, 'O', ido, mol);
+
+    molecul_creator(sems, mem, output, 'O', ido, mem->molecule);
     
     printf("wait_BAR %ld\n", ido);
     sem_wait(sems.barrier);
@@ -187,9 +186,8 @@ void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
     printf("wait_H %ld\n",idh);
     sem_wait(sems.queue_h);
     printf("NOT_wait_H %ld\n", idh);
-    //! bont
-    int mol = mem->molecule;
-    molecul_creator(sems, mem, output, 'H', idh, mol);
+
+    molecul_creator(sems, mem, output, 'H', idh, mem->molecule);
 
     printf("wait_BAR %ld\n",idh);
     sem_wait(sems.barrier);
