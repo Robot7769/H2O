@@ -98,7 +98,7 @@ void molecul_creator(sems_t sems,shmem_t *mem, FILE *output, const char c, size_
     }
     print_out(sems,mem, output,"%c %d: molecule %d created\n", c, id, mol_count);
     (mem->bar)++;
-    printf("bar: %d\n", mem->bar);
+    //printf("bar: %d\n", mem->bar);
     if (mem->bar == 0 ) {
         sem_post(sems.barrier);
         sem_post(sems.barrier);
@@ -134,7 +134,7 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     
     //printf("wait_O\n");
     sem_wait(sems.queue_o);
-    printf("NOT_wait_O\n");
+    //printf("NOT_wait_O\n");
 
     if (mem->max_craete_molekules == 0) {
         print_out(sems,mem,output, "O %d: not enough H\n", ido);
@@ -145,9 +145,9 @@ void oxygen(size_t ido, sems_t sems, shmem_t *mem, FILE *output) {
     molecul_creator(sems, mem, output, 'O', ido, mem->molecule);
 
     
-    printf("wait_BAR O %ld\n", ido);
+    //printf("wait_BAR O %ld\n", ido);
     sem_wait(sems.barrier);
-    printf("NOT_wait_BAR O %ld\n", ido);
+    //printf("NOT_wait_BAR O %ld\n", ido);
     sem_post(sems.mutex);
     fclose(output);
 }
@@ -173,8 +173,8 @@ void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
     }
     //printf("wait_H %ld\n",idh);
     sem_wait(sems.queue_h);
-    printf("NOT_wait_H %ld\n", idh);
-    printf("---je to nula ? %ld\n", mem->max_craete_molekules);
+    //printf("NOT_wait_H %ld\n", idh);
+    //printf("---je to nula ? %ld\n", mem->max_craete_molekules);
     if (mem->max_craete_molekules == 0) {
         print_out(sems,mem,output, "H %d: not enough O or H\n", idh);
         sem_post(sems.mutex);
@@ -184,9 +184,9 @@ void hydrogen(size_t idh, sems_t sems, shmem_t *mem, FILE *output) {
 
     molecul_creator(sems, mem, output, 'H', idh, mem->molecule);
 
-    printf("wait_BAR H %ld\n",idh);
+    //printf("wait_BAR H %ld\n",idh);
     sem_wait(sems.barrier);
-    printf("NOT_wait_BAR H %ld\n", idh);
+    //printf("NOT_wait_BAR H %ld\n", idh);
     fclose(output);
 }
 
